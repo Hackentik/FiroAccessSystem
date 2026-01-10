@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firo AccessSystem - Люди и группы</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff5722;
+            --primary-dark: #c41c00;
+            --bg-color: #f5f5f5;
+            --surface-color: #ffffff;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--bg-color);
+            padding: 20px;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--surface-color);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header h1 i {
+            color: var(--primary-color);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .back-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .section {
+            background: rgba(255, 87, 34, 0.03);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            font-size: 1.25rem;
+            color: var(--primary-dark);
+            margin: 0 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: var(--surface-color);
+        }
+
+        thead {
+            background: var(--primary-color);
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 87, 34, 0.04);
+        }
+
+        .user-name,
+        .group-name {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .user-id,
+        .group-id {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            background: rgba(255, 87, 34, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2e7d32;
+        }
+
+        .status-inactive {
+            background: rgba(244, 67, 54, 0.1);
+            color: #c62828;
+        }
+
+        .role {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: #f5f5f5;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .card-type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .card-type-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .card-type-btn.active {
+            border-color: var(--primary-color);
+            background: rgba(255, 87, 34, 0.1);
+            color: var(--primary-color);
+        }
+
+        .card-type-icon {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .access-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin: 2px;
+        }
+
+        .badge-pin {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-ibutton {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .badge-rfid {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-car {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .access-fields {
+            background: rgba(255, 87, 34, 0.02);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 87, 34, 0.1);
+            margin: 15px 0;
+        }
+
+        .access-field-group {
+            margin-bottom: 15px;
+        }
+
+        .field-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary-dark);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border 0.2s;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn-submit {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-dark);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background: white;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .select-wrapper i {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+            pointer-events: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+        }
+
+        .btn-edit {
+            background: #2196f3;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #1976d2;
+        }
+
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+            font-style: italic;
+        }
+
+        .flash-messages {
+            margin-bottom: 25px;
+        }
+
+        .flash {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .flash-success {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2e7d32;
+            border-left: 3px solid #4caf50;
+        }
+
+        .flash-error {
+            background: rgba(244, 67, 54, 0.1);
+            color: #c62828;
+            border-left: 3px solid #f44336;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 800px;
+            max-width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h2 {
+            color: var(--primary-dark);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .modal-buttons .btn-submit {
+            margin: 0;
+            flex: 1;
+        }
+
+        .btn-cancel {
+            background: #f5f5f5;
+            color: #666;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        @media (max-width: 1200px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                padding: 16px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .modal-content {
+                padding: 20px;
+                margin: 10% auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-users"></i> Люди и группы</h1>
+            <a href="/" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Главное меню
+            </a>
+        </div>
+
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('people')">
+                <i class="fas fa-user"></i> Люди ({{ users|length }})
+            </button>
+            <button class="tab" onclick="switchTab('groups')">
+                <i class="fas fa-layer-group"></i> Группы ({{ groups|length }})
+            </button>
+        </div>
+
+        <div id="people-tab" class="tab-content active">
+            <div class="content-wrapper">
+                <div class="left-column">
+                    <div class="section">
+                        <h2><i class="fas fa-user-plus"></i> Добавить пользователя</h2>
+                        <form action="{{ url_for('add_user_route') }}" method="POST" id="addUserForm">
+                            <div class="form-group">
+                                <label for="name"><i class="fas fa-user"></i> Имя пользователя</label>
+                                <input type="text" id="name" name="name" class="form-control" required
+                                    placeholder="Введите имя">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id"><i class="fas fa-id-card"></i> ID пользователя</label>
+                                <input type="text" id="id" name="id" class="form-control" required
+                                    placeholder="Введите уникальный ID">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="groups"><i class="fas fa-layer-group"></i> Группа</label>
+                                <div class="select-wrapper">
+                                    <select id="groups" name="groups" class="form-control">
+                                        <option value="">Выберите группу</option>
+                                        {% for group in groups %}
+                                        <option value="{{ group.id }}">{{ group.name }} ({{ group.id }})</option>
+                                        {% endfor %}
+                                    </select>
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="role"><i class="fas fa-user-tag"></i> Роль</label>
+                                    <div class="select-wrapper">
+                                        <select id="role" name="role" class="form-control">
+                                            <option value="user">Пользователь</option>
+                                            <option value="admin">Администратор</option>
+                                            <option value="superuser">Суперпользователь</option>
+                                        </select>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="status"><i class="fas fa-circle"></i> Статус</label>
+                                    <div class="select-wrapper">
+                                        <select id="status" name="status" class="form-control">
+                                            <option value="active">Активен</option>
+                                            <option value="inactive">Неактивен</option>
+                                        </select>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="access-fields">
+                                <h3 style="color: var(--primary-dark); font-size: 1.1rem; margin-bottom: 15px;">
+                                    <i class="fas fa-key"></i> Данные для доступа
+                                </h3>
+
+                                <div class="access-field-group">
+                                    <label for="pin"><i class="fas fa-lock"></i> Пин-код</label>
+                                    <input type="password" id="pin" name="pin" class="form-control"
+                                        placeholder="Введите пин-код" maxlength="8" pattern="[0-9]*"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                    <span class="field-hint">Только цифры, максимум 8 символов</span>
+                                </div>
+
+                                <div class="access-field-group">
+                                    <label><i class="fas fa-id-card"></i> Тип карты</label>
+                                    <div class="card-type-selector">
+                                        <div class="card-type-btn" onclick="selectCardType('none')" id="card-type-none">
+                                            <i class="fas fa-times card-type-icon"></i>
+                                            Нет карты
+                                        </div>
+                                        <div class="card-type-btn active" onclick="selectCardType('ibutton')"
+                                            id="card-type-ibutton">
+                                            <i class="fas fa-key card-type-icon"></i>
+                                            iButton
+                                        </div>
+                                        <div class="card-type-btn" onclick="selectCardType('rfid')" id="card-type-rfid">
+                                            <i class="fas fa-wifi card-type-icon"></i>
+                                            RFID/NFC
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="card_type" name="card_type" value="ibutton">
+                                </div>
+
+                                <div class="access-field-group" id="card-code-field">
+                                    <label for="cardcode"><i class="fas fa-barcode"></i> Код карты</label>
+                                    <input type="text" id="cardcode" name="cardcode" class="form-control"
+                                        placeholder="Введите код карты">
+                                    <span class="field-hint" id="card-hint">Код iButton (например: 01A23B45C6)</span>
+                                </div>
+
+                                <div class="access-field-group">
+                                    <label for="liplate"><i class="fas fa-car"></i> Автомобильный номер</label>
+                                    <input type="text" id="liplate" name="liplate" class="form-control"
+                                        placeholder="А123БВ77" maxlength="9"
+                                        oninput="this.value = this.value.toUpperCase()">
+                                    <span class="field-hint">Например: А123БВ77 или AB123CD</span>
+                                </div>
+
+                                <div class="access-field-group">
+                                    <label for="creds"><i class="fas fa-fingerprint"></i> Дополнительные данные</label>
+                                    <textarea id="creds" name="creds" class="form-control" rows="2"
+                                        placeholder="Биометрия, пароли, примечания"></textarea>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-submit">
+                                <i class="fas fa-plus-circle"></i>
+                                Добавить пользователя
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <div class="section">
+                        <h2><i class="fas fa-list"></i> Список пользователей</h2>
+
+                        {% if users %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Имя</th>
+                                    <th>ID</th>
+                                    <th>Статус</th>
+                                    <th>Данные доступа</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td class="user-name">{{ user.name }}</td>
+                                    <td><span class="user-id">{{ user.id }}</span></td>
+                                    <td>
+                                        <span class="status status-{{ user.status }}">
+                                            {% if user.status == 'active' %}Активен{% endif %}
+                                            {% if user.status == 'inactive' %}Неактивен{% endif %}
+                                        </span>
+                                        <br>
+                                        <span class="role">
+                                            {% if user.role == 'admin' %}Администратор{% endif %}
+                                            {% if user.role == 'user' %}Пользователь{% endif %}
+                                            {% if user.role == 'superuser' %}Суперпользователь{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                            {% if user.pin and user.pin != '0' %}
+                                            <span class="access-type-badge badge-pin" title="Пин-код">
+                                                <i class="fas fa-lock"></i> PIN: {{ user.pin }}
+                                            </span>
+                                            {% endif %}
+
+                                            {% if user.cardcode %}
+                                            {% if user.card_type == 'ibutton' %}
+                                            <span class="access-type-badge badge-ibutton" title="iButton">
+                                                <i class="fas fa-key"></i> iButton
+                                            </span>
+                                            {% elif user.card_type == 'rfid' %}
+                                            <span class="access-type-badge badge-rfid" title="RFID/NFC">
+                                                <i class="fas fa-wifi"></i> RFID
+                                            </span>
+                                            {% else %}
+                                            <span class="access-type-badge" title="Карта">
+                                                <i class="fas fa-credit-card"></i> Карта
+                                            </span>
+                                            {% endif %}
+                                            {% endif %}
+
+                                            {% if user.liplate %}
+                                            <span class="access-type-badge badge-car" title="Автомобильный номер">
+                                                <i class="fas fa-car"></i> {{ user.liplate }}
+                                            </span>
+                                            {% endif %}
+
+                                            {% if not user.pin and not user.cardcode and not user.liplate %}
+                                            <span style="color: #999; font-size: 0.85rem;">Нет данных</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-edit" onclick="editUser('{{ user.id }}')">
+                                                <i class="fas fa-edit"></i>
+                                                Изменить
+                                            </button>
+                                            <a href="{{ url_for('delete_user_route', user_id=user.id) }}"
+                                                class="btn btn-delete"
+                                                onclick="return confirm('Вы уверены, что хотите удалить пользователя {{ user.name }}?')">
+                                                <i class="fas fa-trash"></i>
+                                                Удалить
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="no-data">
+                            <i class="fas fa-users-slash fa-3x" style="color: #ff9800; margin-bottom: 15px;"></i>
+                            <p>Пользователи не найдены</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="groups-tab" class="tab-content">
+            <div class="content-wrapper">
+                <div class="left-column">
+                    <div class="section">
+                        <h2><i class="fas fa-layer-group"></i> Добавить группу</h2>
+                        <form action="{{ url_for('add_group_route') }}" method="POST">
+                            <div class="form-group">
+                                <label for="group_name"><i class="fas fa-tag"></i> Название группы</label>
+                                <input type="text" id="group_name" name="name" class="form-control" required
+                                    placeholder="Введите название">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="group_id"><i class="fas fa-id-card"></i> ID группы</label>
+                                <input type="text" id="group_id" name="id" class="form-control" required
+                                    placeholder="Введите уникальный ID">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="group_status"><i class="fas fa-circle"></i> Статус группы</label>
+                                <div class="select-wrapper">
+                                    <select id="group_status" name="status" class="form-control">
+                                        <option value="active">Активна</option>
+                                        <option value="inactive">Неактивна</option>
+                                    </select>
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-submit">
+                                <i class="fas fa-plus-circle"></i>
+                                Добавить группу
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <div class="section">
+                        <h2><i class="fas fa-list"></i> Список групп</h2>
+
+                        {% if groups %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Название</th>
+                                    <th>ID</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for group in groups %}
+                                <tr>
+                                    <td class="group-name">{{ group.name }}</td>
+                                    <td><span class="group-id">{{ group.id }}</span></td>
+                                    <td>
+                                        <span class="status status-{{ group.status }}">
+                                            {% if group.status == 'active' %}Активна{% endif %}
+                                            {% if group.status == 'inactive' %}Неактивна{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-edit" onclick="editGroup('{{ group.id }}')">
+                                                <i class="fas fa-edit"></i>
+                                                Изменить
+                                            </button>
+                                            <a href="{{ url_for('delete_group_route', group_id=group.id) }}"
+                                                class="btn btn-delete"
+                                                onclick="return confirm('Вы уверены, что хотите удалить группу {{ group.name }}?')">
+                                                <i class="fas fa-trash"></i>
+                                                Удалить
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="no-data">
+                            <i class="fas fa-layer-group fa-3x" style="color: #ff9800; margin-bottom: 15px;"></i>
+                            <p>Группы не найдены</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editUserModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-edit"></i> Редактировать пользователя</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+
+            <form id="editUserForm">
+                <input type="hidden" id="edit_user_id">
+
+                <div class="form-group">
+                    <label for="edit_name"><i class="fas fa-user"></i> Имя пользователя</label>
+                    <input type="text" id="edit_name" name="edit_name" class="form-control" required
+                        placeholder="Введите имя">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit_groups"><i class="fas fa-layer-group"></i> Группы</label>
+                    <div class="select-wrapper">
+                        <select id="edit_groups" name="edit_groups" class="form-control">
+                            <option value="">Выберите группу</option>
+                            {% for group in groups %}
+                            <option value="{{ group.id }}">{{ group.name }} ({{ group.id }})</option>
+                            {% endfor %}
+                        </select>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_role"><i class="fas fa-user-tag"></i> Роль</label>
+                        <div class="select-wrapper">
+                            <select id="edit_role" name="edit_role" class="form-control">
+                                <option value="user">Пользователь</option>
+                                <option value="admin">Администратор</option>
+                                <option value="superuser">Суперпользователь</option>
+                            </select>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_status"><i class="fas fa-circle"></i> Статус</label>
+                        <div class="select-wrapper">
+                            <select id="edit_status" name="edit_status" class="form-control">
+                                <option value="active">Активен</option>
+                                <option value="inactive">Неактивен</option>
+                            </select>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="access-fields">
+                    <h3 style="color: var(--primary-dark); font-size: 1.1rem; margin-bottom: 15px;">
+                        <i class="fas fa-key"></i> Данные для доступа
+                    </h3>
+
+                    <div class="access-field-group">
+                        <label for="edit_pin"><i class="fas fa-lock"></i> Пин-код</label>
+                        <input type="password" id="edit_pin" name="edit_pin" class="form-control"
+                            placeholder="Введите пин-код" maxlength="8" pattern="[0-9]*"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <span class="field-hint">Только цифры, максимум 8 символов</span>
+                    </div>
+
+                    <div class="access-field-group">
+                        <label><i class="fas fa-id-card"></i> Тип карты</label>
+                        <div class="card-type-selector">
+                            <div class="card-type-btn" onclick="selectEditCardType('none')" id="edit-card-type-none">
+                                <i class="fas fa-times card-type-icon"></i>
+                                Нет карты
+                            </div>
+                            <div class="card-type-btn" onclick="selectEditCardType('ibutton')"
+                                id="edit-card-type-ibutton">
+                                <i class="fas fa-key card-type-icon"></i>
+                                iButton
+                            </div>
+                            <div class="card-type-btn" onclick="selectEditCardType('rfid')" id="edit-card-type-rfid">
+                                <i class="fas fa-wifi card-type-icon"></i>
+                                RFID/NFC
+                            </div>
+                        </div>
+                        <input type="hidden" id="edit_card_type" name="edit_card_type" value="none">
+                    </div>
+
+                    <div class="access-field-group" id="edit-card-code-field" style="display: none;">
+                        <label for="edit_cardcode"><i class="fas fa-barcode"></i> Код карты</label>
+                        <input type="text" id="edit_cardcode" name="edit_cardcode" class="form-control"
+                            placeholder="Введите код карты">
+                        <span class="field-hint" id="edit-card-hint">Код карты</span>
+                    </div>
+
+                    <div class="access-field-group">
+                        <label for="edit_liplate"><i class="fas fa-car"></i> Автомобильный номер</label>
+                        <input type="text" id="edit_liplate" name="edit_liplate" class="form-control"
+                            placeholder="А123БВ77" maxlength="9" oninput="this.value = this.value.toUpperCase()">
+                        <span class="field-hint">Например: А123БВ77 или AB123CD</span>
+                    </div>
+
+                    <div class="access-field-group">
+                        <label for="edit_creds"><i class="fas fa-fingerprint"></i> Дополнительные данные</label>
+                        <textarea id="edit_creds" name="edit_creds" class="form-control" rows="2"
+                            placeholder="Биометрия, пароли, примечания"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">
+                        <i class="fas fa-times"></i>
+                        Отмена
+                    </button>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save"></i>
+                        Сохранить изменения
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentEditingUser = null;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tabName === 'people') {
+                document.querySelector('.tab:nth-child(1)').classList.add('active');
+                document.getElementById('people-tab').classList.add('active');
+            } else if (tabName === 'groups') {
+                document.querySelector('.tab:nth-child(2)').classList.add('active');
+                document.getElementById('groups-tab').classList.add('active');
+            }
+        }
+
+        function selectCardType(type) {
+            document.querySelectorAll('.card-type-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`card-type-${type}`).classList.add('active');
+            document.getElementById('card_type').value = type;
+
+            const cardCodeField = document.getElementById('card-code-field');
+            const cardHint = document.getElementById('card-hint');
+
+            if (type === 'none') {
+                cardCodeField.style.display = 'none';
+                document.getElementById('cardcode').value = '';
+            } else {
+                cardCodeField.style.display = 'block';
+                if (type === 'ibutton') {
+                    cardHint.textContent = 'Код iButton (например: 01A23B45C6)';
+                    document.getElementById('cardcode').placeholder = 'Введите код iButton';
+                } else if (type === 'rfid') {
+                    cardHint.textContent = 'Код RFID/NFC карты (например: 1234567890ABCDEF)';
+                    document.getElementById('cardcode').placeholder = 'Введите код RFID/NFC';
+                }
+            }
+        }
+
+        function selectEditCardType(type) {
+            document.querySelectorAll('.card-type-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`edit-card-type-${type}`).classList.add('active');
+            document.getElementById('edit_card_type').value = type;
+
+            const cardCodeField = document.getElementById('edit-card-code-field');
+            const cardHint = document.getElementById('edit-card-hint');
+
+            if (type === 'none') {
+                cardCodeField.style.display = 'none';
+                document.getElementById('edit_cardcode').value = '';
+            } else {
+                cardCodeField.style.display = 'block';
+                if (type === 'ibutton') {
+                    cardHint.textContent = 'Код iButton (например: 01A23B45C6)';
+                    document.getElementById('edit_cardcode').placeholder = 'Введите код iButton';
+                } else if (type === 'rfid') {
+                    cardHint.textContent = 'Код RFID/NFC карты (например: 1234567890ABCDEF)';
+                    document.getElementById('edit_cardcode').placeholder = 'Введите код RFID/NFC';
+                }
+            }
+        }
+
+        function editUser(userId) {
+            currentEditingUser = userId;
+
+            document.getElementById('editUserModal').style.display = 'block';
+
+            document.getElementById('edit_user_id').value = userId;
+            document.getElementById('edit_name').value = 'Загрузка...';
+
+            fetch(`/api/user/${userId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка загрузки данных');
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    console.log('Ответ сервера:', result);
+
+                    if (result.success && result.user) {
+                        const user = result.user;
+
+                        document.getElementById('edit_name').value = user.name || '';
+                        document.getElementById('edit_groups').value = user.groups || '';
+                        document.getElementById('edit_role').value = user.role || 'user';
+                        document.getElementById('edit_status').value = user.status || 'active';
+                        document.getElementById('edit_pin').value = user.pin || '';
+                        document.getElementById('edit_cardcode').value = user.cardcode || '';
+                        document.getElementById('edit_liplate').value = user.liplate || '';
+                        document.getElementById('edit_creds').value = user.creds || '';
+
+                        const cardType = user.card_type || (user.cardcode ? 'ibutton' : 'none');
+                        selectEditCardType(cardType);
+
+                        console.log('Данные пользователя загружены:', user);
+                    } else {
+                        console.error('Некорректная структура ответа:', result);
+                        alert('Некорректный ответ от сервера');
+                        document.getElementById('edit_name').value = 'Ошибка данных';
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки данных:', error);
+                    alert('Не удалось загрузить данные пользователя. Проверьте консоль для подробностей.');
+                    document.getElementById('edit_name').value = 'Ошибка загрузки';
+                });
+        }
+
+        function editGroup(groupId) {
+            alert('Редактирование групп пока не реализовано');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editUserModal').style.display = 'none';
+            currentEditingUser = null;
+            document.getElementById('editUserForm').reset();
+        }
+
+        document.getElementById('editUserForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            if (!currentEditingUser) {
+                alert('Нет активного пользователя для редактирования');
+                return;
+            }
+
+            const formData = new FormData(this);
+            const data = {
+                name: formData.get('edit_name'),
+                groups: formData.get('edit_groups'),
+                role: formData.get('edit_role'),
+                status: formData.get('edit_status'),
+                pin: formData.get('edit_pin'),
+                cardcode: formData.get('edit_cardcode'),
+                liplate: formData.get('edit_liplate'),
+                creds: formData.get('edit_creds'),
+                card_type: formData.get('edit_card_type')
+            };
+
+            fetch(`/update_user/${currentEditingUser}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('Пользователь успешно обновлен');
+                        closeEditModal();
+                        location.reload();
+                    } else {
+                        alert('Ошибка: ' + result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    alert('Ошибка сети при обновлении пользователя');
+                });
+        });
+
+        window.onclick = function (event) {
+            const modal = document.getElementById('editUserModal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        };
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeEditModal();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            selectCardType('ibutton');
+            selectEditCardType('none');
+
+            const flashMessages = document.querySelectorAll('.flash');
+            flashMessages.forEach(message => {
+                setTimeout(() => {
+                    message.style.opacity = '0';
+                    message.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => message.remove(), 500);
+                }, 5000);
+            });
+
+            const deleteButtons = document.querySelectorAll('.btn-delete');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    const itemName = this.closest('tr').querySelector('.user-name, .group-name').textContent;
+                    if (!confirm(`Вы уверены, что хотите удалить "${itemName}"?`)) {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            document.getElementById('addUserForm').addEventListener('submit', function (e) {
+                const pinInput = document.getElementById('pin');
+                if (pinInput.value && pinInput.value.length > 8) {
+                    alert('Пин-код не может быть длиннее 8 символов');
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firo AccessSystem - Логгер</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff5722;
+            --primary-light: #ff8a50;
+            --primary-dark: #c41c00;
+            --bg-color: #f5f5f5;
+            --surface-color: #ffffff;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--surface-color);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin: 0;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .back-button:hover {
+            background: var(--primary-dark);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: var(--surface-color);
+        }
+
+        thead {
+            background: var(--primary-color);
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 87, 34, 0.04);
+        }
+
+        .filters-container {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffccbc 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 5px solid #ff9800;
+        }
+
+        .filters-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #d84315;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border 0.2s;
+            background: white;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-apply {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-apply:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-reset {
+            background: #757575;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-reset:hover {
+            background: #424242;
+        }
+
+        .active-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 152, 0, 0.3);
+        }
+
+        .filter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            background: #ff9800;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .filter-badge i {
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffccbc 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 5px solid #ff9800;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #d84315;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .event-id {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #ff5722;
+            background-color: #fff3e0;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .device-cell {
+            font-weight: 600;
+            color: #bf360c;
+        }
+
+        .message-cell {
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+
+        .timestamp {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 500;
+            background-color: #f5f5f5;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .index-cell {
+            font-weight: 700;
+            color: #ff9800;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .status-success {
+            color: #2e7d32;
+            font-weight: bold;
+            background-color: #e8f5e9;
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+
+        .status-error {
+            color: #c62828;
+            font-weight: bold;
+            background-color: #ffebee;
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                padding: 16px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-clipboard-list"></i> Логгер событий</h1>
+            <a href="/" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Главное меню
+            </a>
+        </div>
+
+        <div class="filters-container">
+            <div class="filters-title">
+                <i class="fas fa-filter"></i>
+                Фильтры событий
+            </div>
+
+            <form method="GET" action="" id="filterForm">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-id-card"></i>
+                            Фильтр по ID:
+                        </label>
+                        <input type="text" name="id_filter" class="filter-input" placeholder="Введите ID..."
+                            value="{{ request.args.get('id_filter', '') }}">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-comment-alt"></i>
+                            Фильтр по сообщению:
+                        </label>
+                        <input type="text" name="levent_filter" class="filter-input"
+                            placeholder="Введите текст сообщения..."
+                            value="{{ request.args.get('levent_filter', '') }}">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-clock"></i>
+                            Фильтр по времени:
+                        </label>
+                        <select name="time_filter" class="filter-select">
+                            <option value="">Все время</option>
+                            <option value="hour" {% if request.args.get('time_filter')=='hour' %}selected{% endif %}>
+                                Последний час</option>
+                            <option value="today" {% if request.args.get('time_filter')=='today' %}selected{% endif %}>
+                                Сегодня</option>
+                            <option value="week" {% if request.args.get('time_filter')=='week' %}selected{% endif %}>
+                                Последняя неделя</option>
+                            <option value="month" {% if request.args.get('time_filter')=='month' %}selected{% endif %}>
+                                Последний месяц</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn-apply">
+                        <i class="fas fa-check"></i>
+                        Применить фильтры
+                    </button>
+                    <button type="button" onclick="resetFilters()" class="btn-reset">
+                        <i class="fas fa-times"></i>
+                        Сбросить фильтры
+                    </button>
+                </div>
+
+                {% if request.args.get('id_filter') or request.args.get('levent_filter') or
+                request.args.get('time_filter') %}
+                <div class="active-filters">
+                    {% if request.args.get('id_filter') %}
+                    <span class="filter-badge">
+                        ID: {{ request.args.get('id_filter') }}
+                        <i class="fas fa-times" onclick="removeFilter('id_filter')"></i>
+                    </span>
+                    {% endif %}
+
+                    {% if request.args.get('levent_filter') %}
+                    <span class="filter-badge">
+                        Сообщение: {{ request.args.get('levent_filter') }}
+                        <i class="fas fa-times" onclick="removeFilter('levent_filter')"></i>
+                    </span>
+                    {% endif %}
+
+                    {% if request.args.get('time_filter') %}
+                    <span class="filter-badge">
+                        Время:
+                        {% if request.args.get('time_filter') == 'hour' %}Последний час
+                        {% elif request.args.get('time_filter') == 'today' %}Сегодня
+                        {% elif request.args.get('time_filter') == 'week' %}Последняя неделя
+                        {% elif request.args.get('time_filter') == 'month' %}Последний месяц
+                        {% endif %}
+                        <i class="fas fa-times" onclick="removeFilter('time_filter')"></i>
+                    </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value">{{ events|length }}</div>
+                <div class="stat-label">Найдено событий</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="success-count">
+                    {% set count = 0 %}
+                    {% for event in events %}
+                    {% if 'успех' in event.levent.lower() or 'доступ разреш' in event.levent.lower() or 'подключен' in
+                    event.levent.lower() %}
+                    {% set count = count + 1 %}
+                    {% endif %}
+                    {% endfor %}
+                    {{ count }}
+                </div>
+                <div class="stat-label">Успешных событий</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="error-count">
+                    {% set count = 0 %}
+                    {% for event in events %}
+                    {% if 'ошибка' in event.levent.lower() or 'отказано' in event.levent.lower() or 'отключен' in
+                    event.levent.lower() %}
+                    {% set count = count + 1 %}
+                    {% endif %}
+                    {% endfor %}
+                    {{ count }}
+                </div>
+                <div class="stat-label">Событий с ошибками</div>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag"></i> Индекс</th>
+                    <th><i class="fas fa-id-card"></i> ID</th>
+                    <th><i class="fas fa-desktop"></i> Устройство</th>
+                    <th><i class="fas fa-comment-alt"></i> Сообщение</th>
+                    <th><i class="fas fa-clock"></i> Время</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td class="index-cell">{{ event.num }}</td>
+                    <td><span class="event-id">{{ event.id }}</span></td>
+                    <td class="device-cell">{{ event.device }}</td>
+                    <td class="message-cell">
+                        {% if 'успех' in event.levent.lower() or 'доступ разреш' in event.levent.lower() or 'подключен'
+                        in event.levent.lower() %}
+                        <span class="status-success">{{ event.levent }}</span>
+                        {% elif 'ошибка' in event.levent.lower() or 'отказано' in event.levent.lower() or 'отключен' in
+                        event.levent.lower() %}
+                        <span class="status-error">{{ event.levent }}</span>
+                        {% else %}
+                        {{ event.levent }}
+                        {% endif %}
+                    </td>
+                    <td><span class="timestamp">{{ event.human_time }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if events|length == 0 %}
+        <div style="text-align: center; padding: 40px; color: #757575;">
+            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 20px;"></i>
+            <h3>События не найдены</h3>
+            <p>Попробуйте изменить параметры фильтров</p>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            <p>Система Firo AccessSystem | Лог событий</p>
+        </div>
+    </div>
+
+    <script>
+        function resetFilters() {
+            document.getElementById('filterForm').reset();
+            document.getElementById('filterForm').submit();
+        }
+
+        function removeFilter(filterName) {
+            const form = document.getElementById('filterForm');
+            const url = new URL(window.location.href);
+            url.searchParams.delete(filterName);
+            window.location.href = url.toString();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.toString()) {
+                history.replaceState(null, '', window.location.pathname + '?' + urlParams.toString());
+            }
+        });
+    </script>
+</body>
+
+</html>
