@@ -8,7 +8,6 @@ import sys
 import os
 import ologger
 
-# Добавляем путь к проекту для импорта
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 logging.basicConfig(level=logging.INFO)
@@ -22,8 +21,6 @@ class MQTTHandler:
         self.is_connected = False
         self.connected_devices = {}
         
-        # Пытаемся импортировать функции БД
-# В классе MQTTHandler в __init__:
         try:
             from users_db import get_user_by_card, get_user_by_pin, register_device, update_device_last_seen
             self.get_user_by_card = get_user_by_card
@@ -49,11 +46,9 @@ class MQTTHandler:
             
             self.client.connect(self.host, self.port, 60)
             
-            # Запускаем в отдельном потоке
             thread = threading.Thread(target=self._mqtt_loop, daemon=True)
             thread.start()
             
-            # Ждем подключения
             for i in range(5):
                 if self.is_connected:
                     return True
@@ -79,7 +74,6 @@ class MQTTHandler:
             logger.info("✓ Подключено к MQTT")
             ologger.newLog("✓ Подключено к MQTT", "FiroAccessServer", "FiroAccessServer")
             
-            # Подписываемся на топики
             topics = [
                 ("access/events", 0),
                 ("access/requests", 0),
@@ -143,7 +137,6 @@ class MQTTHandler:
             'status': 'online'
         })
         
-        # Обновляем время последнего контакта в базе данных
         if self.db_available:
             try:
                 self.update_device_last_seen(device_id)
@@ -151,7 +144,6 @@ class MQTTHandler:
                 logger.error(f"Ошибка обновления времени устройства {device_id}: {e}")
     
     def _handle_access_request(self, data):
-        """Обработка запросов доступа с проверкой в базе данных"""
         request_id = data.get('request_id')
         device_id = data.get('device_id')
         card_number = data.get('card_number')
@@ -172,13 +164,11 @@ class MQTTHandler:
                 response['message'] = "Ошибка сервера: база данных недоступна"
                 ologger.newLog("База данных недоступна", device_id, device_id)
             else:
-                # Регистрируем устройство, если оно ещё не зарегистрировано
                 try:
                     self.register_device(device_id)
                 except Exception as e:
                     logger.warning(f"Не удалось зарегистрировать устройство {device_id}: {e}")
                 
-                # Ищем пользователя
                 user = None
                 
                 if card_number:
@@ -189,12 +179,10 @@ class MQTTHandler:
                     logger.info(f"Поиск по PIN {pin_code}: {'найден' if user else 'не найден'}")
                 
                 if user:
-                    # Проверяем статус пользователя
                     user_status = user.get('status', '').lower()
                     user_name = user.get('name', 'Неизвестно')
                     
                     if user_status == 'active':
-                        # Проверяем доступ к конкретной двери
                         from users_db import check_user_access
                         has_access, access_message = check_user_access(user, device_id, 'card' if card_number else 'pin')
                         
@@ -225,22 +213,12 @@ class MQTTHandler:
             response['message'] = f"Ошибка сервера: {str(e)}"
             ologger.newLog(f"Ошибка проверки доступа: {e}", device_id, device_id)
         
-        # Отправляем ответ устройству
         self.publish('access/responses', response)
 
-
-        # Логируем результат
-        log_msg = f"Доступ {'РАЗРЕШЕН' if response['success'] else 'ЗАПРЕЩЕН'}: "
-        log_msg += f"устройство={device_id}, "
-        if card_number:
-            log_msg += f"карта={card_number}, "
-        if pin_code:
-            log_msg += f"PIN={pin_code}, "
-        log_msg += f"результат={response['message']}"
         from scenarios_db import check_card_scenario
         check_card_scenario(card_number, user_name)
         ologger.newLog(f"Доступ {'РАЗРЕШЕН' if response['success'] else 'ЗАПРЕЩЕН'}: устройство: {device_id}, карта={card_number}, PIN={pin_code}, результат={response['message']}", device_id, device_id)
-        logger.info(log_msg)
+        logger.info(f"Доступ {'РАЗРЕШЕН' if response['success'] else 'ЗАПРЕЩЕН'}: устройство={device_id}, карта={card_number}, PIN={pin_code}, результат={response['message']}")
     
     def _handle_status(self, data):
         device_id = data.get('device_id')
@@ -250,7 +228,6 @@ class MQTTHandler:
         if device_id:
             if device_id not in self.connected_devices:
                 self.connected_devices[device_id] = {}
-                # Регистрируем новое устройство в базе данных
                 if self.db_available:
                     try:
                         self.register_device(device_id, ip_address=ip_address)
@@ -266,14 +243,12 @@ class MQTTHandler:
             
             logger.info(f"Статус {device_id}: {status}")
             
-            # Логируем изменение статуса устройства
             if status == 'online':
                 ologger.newLog(f"Устройство {device_id} онлайн ({ip_address})", "FiroAccessServer", "FiroAccessServer")
             elif status == 'offline':
                 ologger.newLog(f"Устройство {device_id} оффлайн", "FiroAccessServer", "FiroAccessServer")
     
     def _handle_client_response(self, data):
-        """Обработка ответов от клиентов на команды"""
         device_id = data.get('device_id')
         command = data.get('command')
         result = data.get('result')
@@ -308,7 +283,6 @@ class MQTTHandler:
             return False
     
     def open_door(self, device_id):
-        """Открыть дверь на устройстве"""
         data = {
             'command': 'open_door',
             'device_id': device_id,
@@ -319,7 +293,6 @@ class MQTTHandler:
         return self.publish('access/commands', data)
     
     def close_door(self, device_id):
-        """Закрыть дверь на устройстве"""
         data = {
             'command': 'close_door',
             'device_id': device_id,
@@ -350,7 +323,6 @@ class MQTTHandler:
         return self.publish('access/commands', data)
 
     def reboot_device(self, device_id):
-        """Перезагрузить устройство"""
         data = {
             'command': 'reboot',
             'device_id': device_id,
@@ -361,19 +333,15 @@ class MQTTHandler:
         return self.publish('access/commands', data)
     
     def get_connected_devices(self):
-        """Получить список подключенных устройств"""
         return self.connected_devices
     
     def disconnect(self):
-        """Отключиться от MQTT брокера"""
         if self.client:
             self.client.disconnect()
             self.is_connected = False
             logger.info("Отключено от MQTT")
             ologger.newLog("Отключено от MQTT", "FiroAccessServer", "FiroAccessServer")
 
-
-# Глобальный экземпляр
 mqtt_handler = None
 
 def init_mqtt(host='127.0.0.1', port=1883):
