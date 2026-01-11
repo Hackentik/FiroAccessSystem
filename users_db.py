@@ -282,12 +282,18 @@ def add_door_schedule(door_id, schedule_name, start_time, end_time,
     print(f"Расписание '{schedule_name}' для {door_id}: {start_utc}-{end_utc} UTC")
 
 def is_door_in_open_hours(door_id):
+    print(f"\n=== DEBUG is_door_in_open_hours ===")
+    print(f"door_id: {door_id}")
+    
     connection = sqlite3.connect(DB_NAME)
     cursor = connection.cursor()
-
+    
     current_utc = datetime.utcnow()
     current_time = current_utc.strftime('%H:%M')
     current_weekday = current_utc.weekday()
+    print(f"current_time (UTC): {current_time}")
+    print(f"current_weekday: {current_weekday}")
+    
     query = '''
     SELECT access_type
     FROM DoorAccessSchedules
@@ -297,11 +303,13 @@ def is_door_in_open_hours(door_id):
     AND substr(weekdays, ?, 1) = '1'
     LIMIT 1
     '''
-
+    
     cursor.execute(query, (door_id, current_time, current_weekday + 1))
     result = cursor.fetchone()
+    print(f"SQL result: {result}")
+    
     connection.close()
-
+    
     return result[0] if result else None
 
 def delete_door_schedule(schedule_id):
@@ -628,51 +636,73 @@ def get_door_permissions(device_id=None, group_id=None):
     return permissions
 
 def check_user_access(user, device_id, access_type='card'):
+    print(f"\n=== DEBUG check_user_access ===")
+    print(f"device_id: {device_id}")
+    print(f"access_type: {access_type}")
+    print(f"user: {user}")
+    
+
     door_schedule = is_door_in_open_hours(device_id)
+    print(f"door_schedule result: {door_schedule}")
+    
     if door_schedule == 'allow_all':
         door = get_door_by_device_id(device_id)
         if door and door.get('status') == 'active':
+            print(f"DEBUG: Свободный доступ (рабочие часы)")
             return True, "Свободный доступ (рабочие часы)"
-
+    
     if not user:
+        print(f"DEBUG: Пользователь не найден")
         return False, "Пользователь не найден"
-
+    
+    print(f"user status: {user.get('status', '')}")
     if user.get('status', '').lower() != 'active':
+        print(f"DEBUG: Пользователь не активен")
         return False, "Пользователь не активен"
-
+    
     if access_type == 'card':
-        from scenarios_db import check_card_scenario
-        check_card_scenario(user.get('cardcode'), user.get('name'))
+        print(f"user cardcode: {user.get('cardcode')}")
         if not user.get('cardcode'):
+            print(f"DEBUG: Карта не привязана")
             return False, "Карта не привязана"
     elif access_type == 'pin':
+        print(f"user pin: {user.get('pin')}")
         if not user.get('pin') or user.get('pin') == 0:
+            print(f"DEBUG: PIN не установлен")
             return False, "PIN не установлен"
+    
 
     door = get_door_by_device_id(device_id)
+    print(f"door exists: {bool(door)}")
+    
     if not door:
         register_device(device_id)
         door = get_door_by_device_id(device_id)
-
+        print(f"door after registration: {door}")
+        
         if not door:
+            print(f"DEBUG: Дверь не найдена")
             return False, "Дверь не найдена"
-
+    
+    print(f"door status: {door.get('status', '')}")
     if door.get('status', '').lower() != 'active':
+        print(f"DEBUG: Дверь не активна")
         return False, "Дверь не активна"
-
+    
     user_groups = user.get('groups', '')
-    if not user_groups:
-        return False, "Пользователь не состоит в группах"
-
+    print(f"user groups raw: '{user_groups}'")
     group_list = [g.strip() for g in user_groups.split(',') if g.strip()]
+    print(f"user group list: {group_list}")
+    
     if not group_list:
+        print(f"DEBUG: Пользователь не состоит в группах")
         return False, "Пользователь не состоит в группах"
-
+    
     connection = sqlite3.connect(DB_NAME)
     cursor = connection.cursor()
-
+    
     placeholders = ','.join(['?'] * len(group_list))
-
+    
     query = f'''
     SELECT permission_type, schedule
     FROM DoorPermissions
@@ -680,47 +710,81 @@ def check_user_access(user, device_id, access_type='card'):
     ORDER BY CASE WHEN permission_type = 'deny' THEN 1 ELSE 2 END
     LIMIT 1
     '''
-
+    
     params = group_list + [device_id]
+    print(f"SQL query: {query}")
+    print(f"SQL params: {params}")
+    
     cursor.execute(query, params)
     result = cursor.fetchone()
-
+    print(f"SQL result: {result}")
+    
     connection.close()
-
+    
     if result:
         permission_type = result[0]
         schedule_json = result[1]
-
+        
         try:
             schedule = json.loads(schedule_json) if schedule_json else {}
         except:
             schedule = {}
-
+        
+        print(f"permission_type: {permission_type}")
+        print(f"schedule: {schedule}")
+        
         has_access_now = check_schedule_access(schedule)
-
+        print(f"schedule access: {has_access_now}")
+        
         if permission_type == 'allow' and has_access_now:
+            print(f"DEBUG: Доступ разрешен")
             return True, "Доступ разрешен"
         else:
-            return False, "Доступ запрещен"
-
+            reason = "Доступ запрещен"
+            if permission_type == 'deny':
+                reason = "Доступ запрещен (явный запрет)"
+            elif not has_access_now:
+                reason = "Доступ запрещен (не в разрешенное время)"
+            print(f"DEBUG: {reason}")
+            return False, reason
+    
+    print(f"DEBUG: Нет разрешений для доступа")
     return False, "Нет разрешений для доступа"
 
 def check_schedule_access(schedule):
+    print(f"\n=== DEBUG check_schedule_access ===")
+    print(f"schedule: {schedule}")
+    
     if not schedule:
-        if 'always' in schedule and schedule['always']:
-            return True
+        print(f"Empty schedule, returning True")
+        return True
+    
 
+    if 'always' in schedule:
+        always_value = schedule['always']
+
+        if (isinstance(always_value, str) and always_value.lower() == "true") or \
+           (isinstance(always_value, bool) and always_value):
+            print(f"Schedule has 'always' = true/True")
+            return True
+    
     current_utc = datetime.utcnow()
     current_hour = current_utc.hour
     current_minute = current_utc.minute
     current_time_str = f"{current_hour:02d}:{current_minute:02d}"
-
+    print(f"current_time_str: {current_time_str}")
+    
     if 'time_range' in schedule:
         start = schedule['time_range'].get('start', '00:00')
         end = schedule['time_range'].get('end', '23:59')
+        print(f"time_range: {start} - {end}")
+        
+        result = start <= current_time_str <= end
+        print(f"time in range: {result}")
+        return result
+    
 
-        return start <= current_time_str <= end
-
+    print(f"No 'always' or 'time_range' in schedule, returning False")
     return False
 
 def get_accessible_doors_for_user(user_id):
