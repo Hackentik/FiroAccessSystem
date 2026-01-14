@@ -23,10 +23,7 @@ from users_db import (
     add_group, delete_group, update_group, get_group_by_id, 
     add_user_to_group, remove_user_from_group, check_user_access
 )
-from scenarios_db import (
-    setup_scenarios_db, get_scenarios, add_scenario, 
-    update_scenario, delete_scenario, check_card_scenario
-)
+
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this'
 
@@ -440,125 +437,11 @@ def scenarios():
 
     
     return "На данный момент не сделано"
-@app.route('/api/scenario/<int:scenario_id>/test', methods=['POST'])
-@login_required
-def api_test_scenario(scenario_id):
-    try:
-        from scenarios_db import get_scenarios, execute_scenario_action
-        scenarios = get_scenarios()
-        
-        scenario = next((s for s in scenarios if s['id'] == scenario_id), None)
-        if not scenario:
-            return jsonify({'success': False, 'message': 'Сценарий не найден'}), 404
-        
-        context_data = {
-            'user_name': 'Тестовый пользователь',
-            'card_number': '1234567890',
-            'timestamp': datetime.now().isoformat(),
-            'device_id': 'test_device',
-            'test_mode': True
-        }
-        
-        execute_scenario_action(scenario, context_data)
-        
-        return jsonify({
-            'success': True,
-            'message': f'Сценарий "{scenario["name"]}" протестирован'
-        })
-        
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
 
-@app.route('/api/scenarios', methods=['GET'])
-@login_required
-def api_get_scenarios():
-    try:
-        scenarios = get_scenarios()
-        return jsonify({'success': True, 'scenarios': scenarios})
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
 
-@app.route('/api/scenario', methods=['POST'])
-@login_required
-def api_add_scenario():
-    try:
-        data = request.get_json()
-        
-        required_fields = ['name', 'trigger_type', 'trigger_value', 'action_type', 'action_value']
-        if not all(field in data for field in required_fields):
-            return jsonify({'success': False, 'message': 'Не все обязательные поля заполнены'}), 400
-        
-        add_scenario(
-            name=data['name'],
-            description=data.get('description', ''),
-            trigger_type=data['trigger_type'],
-            trigger_value=data['trigger_value'],
-            action_type=data['action_type'],
-            action_value=data['action_value'],
-            enabled=data.get('enabled', True)
-        )
-        
-        log_event(f"Добавлен сценарий: {data['name']}", "Scenarios")
-        
-        return jsonify({'success': True, 'message': 'Сценарий добавлен'})
-        
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
 
-@app.route('/api/scenario/<int:scenario_id>', methods=['PUT'])
-@login_required
-def api_update_scenario(scenario_id):
-    try:
-        data = request.get_json()
-        
-        if not data:
-            return jsonify({'success': False, 'message': 'Нет данных'}), 400
-        
-        update_data = {}
-        fields = ['name', 'description', 'trigger_type', 'trigger_value', 
-                 'action_type', 'action_value', 'enabled']
-        
-        for field in fields:
-            if field in data:
-                update_data[field] = data[field]
-        
-        if update_data:
-            update_scenario(scenario_id, **update_data)
-            log_event(f"Обновлен сценарий ID: {scenario_id}", "Scenarios")
-            
-            return jsonify({'success': True, 'message': 'Сценарий обновлен'})
-        
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
 
-@app.route('/api/scenario/<int:scenario_id>', methods=['DELETE'])
-@login_required
-def api_delete_scenario(scenario_id):
-    try:
-        delete_scenario(scenario_id)
-        log_event(f"Удален сценарий ID: {scenario_id}", "Scenarios")
-        
-        return jsonify({'success': True, 'message': 'Сценарий удален'})
-        
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
 
-@app.route('/api/door/<string:device_id>', methods=['DELETE'])
-@login_required
-def api_delete_door(device_id):
-    try:
-        from users_db import delete_door
-        delete_door(device_id)
-        
-        log_event(f"Удалена дверь: {device_id}", "DoorManagement")
-        
-        return jsonify({
-            'success': True,
-            'message': 'Дверь удалена'
-        })
-        
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/api/door/permissions', methods=['GET'])
 @login_required
@@ -813,13 +696,7 @@ def api_open_door():
         if mqtt:
             mqtt.open_door(device_id)
             
-            # ========== ДОБАВЬ ЭТО ==========
-            try:
-                from scenarios_db import check_door_trigger
-                check_door_trigger(device_id, 'door_opened')
-            except Exception as e:
-                print(f"Scenario error: {e}")
-            # ================================
+
             
             log_event(f"Дверь открыта через интерфейс на устройстве {device_id}")
             
@@ -849,7 +726,7 @@ def api_close_door():
             }), 403
         
         if mqtt:
-            trigger_door_scenarios(device_id, 'door_closed')
+
             mqtt.close_door(device_id)
             
             log_event(f"Дверь закрыта через интерфейс на устройстве {device_id}")
@@ -1106,12 +983,7 @@ def api_check_access():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
-def trigger_door_scenarios(device_id, event_type):
-    try:
-        from scenarios_db import check_door_trigger
-        check_door_trigger(device_id, event_type)
-    except Exception as e:
-        app.logger.error(f"Ошибка триггера сценариев для двери {device_id}: {str(e)}")
+
 
 from users_db import (
     setupUserDB, get_users, get_groups, add_user, delete_user, 
